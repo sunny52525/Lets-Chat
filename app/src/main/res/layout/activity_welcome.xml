@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/welcome"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".WelcomeActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:background="#433F3F"
+        android:text="Hey There!">
+    </TextView>
+    <Button
+        android:id="@+id/button_welcome_Register"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#575555"
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:textColor="#000000"
+        android:text="Sign up"
+        android:textColorHint="#ffffff"
+        android:autofillHints="" />
+    <Button
+        android:id="@+id/button_welcome_Login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:background="#FF575555"
+        android:textColor="#000000"
+        android:text="Sign in"
+        android:textColorHint="#ffffff"
+        android:autofillHints="" />
+
+
+</LinearLayout>

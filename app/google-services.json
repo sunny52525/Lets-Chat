@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "509150786154",
+    "firebase_url": "https://chat-app-dec80.firebaseio.com",
+    "project_id": "chat-app-dec80",
+    "storage_bucket": "chat-app-dec80.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509150786154:android:2d1df3e5182dedc72a9013",
+        "android_client_info": {
+          "package_name": "com.shaun.letschat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "509150786154-sspodqb1sea9sq1ma0s34kr93ti8v8qe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCktiVpd-9UDaxrmFh3IqbtHyE3ObbaXto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "509150786154-sspodqb1sea9sq1ma0s34kr93ti8v8qe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
