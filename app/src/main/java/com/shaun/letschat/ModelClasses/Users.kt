@@ -33,28 +33,39 @@ class Users {
         this.instagram = instagram
         this.website = website
     }
-    fun getUID():String{
+
+    override fun toString(): String {
+        return """
+            username is $username
+            
+        """.trimIndent()
+    }
+
+    fun getUID(): String {
         return uid
     }
-    fun setUID(uid:String){
-        this.uid=uid
+
+    fun setUID(uid: String) {
+        this.uid = uid
     }
 
-    fun getUserName():String{
+    fun getUserName(): String {
         return username
     }
-    fun setUserName(username: String){
-        this.username=username
+
+    fun setUserName(username: String) {
+        this.username = username
     }
 
-    fun getProfile():String{
+    fun getProfile(): String {
         return profile
     }
-    fun setProfile(profile: String){
-        this.profile=profile
+
+    fun setProfile(profile: String) {
+        this.profile = profile
     }
 
-    fun getCover():String{
+    fun getCover(): String {
         return cover
     }
     fun setCover(cover: String){

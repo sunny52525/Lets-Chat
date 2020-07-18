@@ -14,8 +14,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.iid.FirebaseInstanceId
 import com.shaun.letschat.ModelClasses.ChatList
 import com.shaun.letschat.ModelClasses.Users
+import com.shaun.letschat.Notifications.Token
 import com.shaun.letschat.R
 import com.shaun.letschat.TAG
 import com.shaun.letschat.adapterClasses.UserAdapter
@@ -50,41 +52,48 @@ class ChatFragment : Fragment() {
         usersChatList = ArrayList()
         val ref =
             FirebaseDatabase.getInstance().reference.child("ChatList").child(firebaseUser!!.uid)
-        ref!!.addValueEventListener(object : ValueEventListener {
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
+
             override fun onDataChange(p0: DataSnapshot) {
 //                Log.d(TAG, "onDataChange: evrything ${p0}")
                 (usersChatList as ArrayList).clear()
 
-                for (datasnapshot in p0.children)
-                {
+                for (datasnapshot in p0.children) {
                     Log.d(TAG, "onDataChange:1 $datasnapshot")
-                    val chatlist=datasnapshot.getValue(ChatList::class.java)
+                    val chatlist = datasnapshot.getValue(ChatList::class.java)
 //                    Log.d(TAG, "onDataChange: ${datasnapshot.key}")
                     chatlist!!.setId(datasnapshot.key!!)
 //                    Log.d(TAG, "onDataChange: chatlist $chatlist")
 //                    Log.d(TAG, "onDataChange: ${chatlist!!.javaClass}.")
-                    (usersChatList as ArrayList).add(chatlist!!)
+                    (usersChatList as ArrayList).add(chatlist)
                 }
-//                Log.d(TAG, "onDataChange: chat ${usersChatList.}")
+//                Log.d(TAG, "onDataChange: cha t ${usersChatList.}")
 //                for(each in usersChatList!!){
 //                    Log.d(TAG, "onDataChange: chatlist $each")
 //                }
 //                Log.d(TAG, "onDataChange: &&&&&&&&&&&&&&&&&&&&")
-                    retrieveChatList()
-             
+                retrieveChatList()
+
             }
 
         })
+        updateToken(FirebaseInstanceId.getInstance().token)
         return view
+    }
+
+    private fun updateToken(token: String?) {
+        val ref = FirebaseDatabase.getInstance().reference.child("Tokens")
+        val token1 = Token(token!!)
+        ref.child(firebaseUser!!.uid).setValue(token1)
     }
 
     private fun retrieveChatList() {
         mUsers = ArrayList()
         val ref = FirebaseDatabase.getInstance().reference.child("Users")
-        ref!!.addValueEventListener(object : ValueEventListener {
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
@@ -101,8 +110,8 @@ class ChatFragment : Fragment() {
                     for (eachChat in usersChatList!!) {
                         Log.d(TAG, "onDataChange: each ${eachChat}")
 //                        Log.d(TAG, "onDataChange: ${eachChat.getId()}")
-                        if (user!!.getUID().equals(eachChat.getId())) {
-                            (mUsers as ArrayList).add(user!!)
+                        if (user.getUID().equals(eachChat.getId())) {
+                            (mUsers as ArrayList).add(user)
                         }
 //                        Log.d(TAG, "onDataChange: *****************************")
                     }

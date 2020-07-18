@@ -17,11 +17,16 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
+import com.shaun.letschat.Fragments.APIService
 import com.shaun.letschat.ModelClasses.Chat
 import com.shaun.letschat.ModelClasses.Users
+import com.shaun.letschat.Notifications.*
 import com.shaun.letschat.adapterClasses.ChatsAdapter
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_messaage_chat.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 const val TAG = "CHAT ACTIVITY"
 
@@ -31,7 +36,9 @@ class MessaageChat : AppCompatActivity() {
     var chatsAdapter: ChatsAdapter? = null
     var mChatList: List<Chat>? = null
     lateinit var recycler_view: RecyclerView
-    var reference:DatabaseReference?=null
+    var reference: DatabaseReference? = null
+    var notify = false
+    var apiService: APIService? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +53,8 @@ class MessaageChat : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-
+        apiService =
+            Client.Client.getClient("https://fcm.googleapis.com/")!!.create(APIService::class.java)
         userIDVisit = intent.getStringExtra("visit_id")
 
         firebaseUser = FirebaseAuth.getInstance().currentUser
@@ -68,12 +76,13 @@ class MessaageChat : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val user = snapshot.getValue(Users::class.java)
                 username_chat.text = user!!.getUserName()
-                Picasso.get().load(user!!.getProfile()).into(profile_image_chat)
+                Picasso.get().load(user.getProfile()).into(profile_image_chat)
                 retrieveMessage(firebaseUser!!.uid, userIDVisit, user.getProfile())
             }
         })
 
         attach_image_file_btn.setOnClickListener {
+            notify = true
             Toast.makeText(this, "here", Toast.LENGTH_SHORT).show()
             val intent = Intent()
             intent.action = Intent.ACTION_GET_CONTENT
@@ -83,6 +92,7 @@ class MessaageChat : AppCompatActivity() {
         }
         seenMessage(userIDVisit)
         send_message_btn.setOnClickListener {
+            notify = true
             val message = text_message.text.toString()
             if (message.isNotEmpty()) {
                 sendMessageToUser(firebaseUser!!.uid, userIDVisit, message)
@@ -107,11 +117,11 @@ class MessaageChat : AppCompatActivity() {
                     val chat = snapshot.getValue(Chat::class.java)
                     Log.d(TAG, "onmsg: ${snapshot.child("isseen")}")
                     chat!!.setIseen(snapshot.child("isseen").value.toString().toBoolean())
-                    chat!!.setReciever(snapshot.child("receiver").value.toString())  //for some weird fucking reason this doesnt happen automatically
+                    chat.setReciever(snapshot.child("receiver").value.toString())  //for some weird fucking reason this doesnt happen automatically
                     Log.d(TAG, "onDataChange:${snapshot.child("receiver").value} ")
 
 
-                    if (chat!!.getReciever().equals(senderid) && chat.getSender().equals(reciverId)
+                    if (chat.getReciever().equals(senderid) && chat.getSender().equals(reciverId)
                         || chat.getReciever().equals(reciverId) && chat.getSender().equals(senderid)
                     ) {
 
@@ -150,7 +160,8 @@ class MessaageChat : AppCompatActivity() {
                         .child(firebaseUser!!.uid)
                         .child(userIDVisit)
 
-                    val chatlis=FirebaseDatabase.getInstance().reference.child("ChatList").child(userIDVisit).child(firebaseUser!!.uid)
+                    val chatlis = FirebaseDatabase.getInstance().reference.child("ChatList")
+                        .child(userIDVisit).child(firebaseUser!!.uid)
                     chatlis.child("id").setValue(firebaseUser!!.uid)
 
                     chatListReference.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -192,16 +203,83 @@ class MessaageChat : AppCompatActivity() {
 
                     //FCM part left
 
-                    val reference = FirebaseDatabase.getInstance().reference
-                        .child("Users").child(firebaseUser!!.uid)
 
                 }
             }
+        val userReference = FirebaseDatabase.getInstance().reference
+            .child("Users").child(firebaseUser!!.uid)
+
+        userReference.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                val user = p0.getValue(Users::class.java)
+                Log.d(TAG, "onDataChange:user $user ")
+                if (notify) {
+                    Log.d(TAG, "onDataChange:rec $reciver")
+                    sendNotification(reciver, user!!.getUserName(), message)
+                }
+                notify = false
+            }
+        })
+    }
+
+    private fun sendNotification(reciver: String?, userName: String, message: String) {
+        val ref = FirebaseDatabase.getInstance().reference.child("Tokens")
+        val query = ref.orderByKey().equalTo(reciver)
+        query.addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (dataSnap in snapshot.children) {
+//                    Log.d(TAG, "onDataChange: $dataSnap")
+                    val token: Token? = dataSnap.getValue(Token::class.java)
+                    Log.d(TAG, "token: ${token!!.getToken()}")
+                    val data = Data(
+                        firebaseUser!!.uid,
+                        R.mipmap.ic_launcher_round,
+                        "$userName: $message",
+                        "New Message",
+                        userIDVisit
+                    )
+                    val sender = Sender(data, token.getToken())
+                    apiService!!.sendNotification(sender)
+                        .enqueue(object : Callback<MyResponse> {
+                            override fun onFailure(call: Call<MyResponse>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+
+                            override fun onResponse(
+                                call: Call<MyResponse>,
+                                response: Response<MyResponse>
+                            ) {
+                                Log.d(TAG, "onResponse: ${response.code()}")
+                                if (response.code() == 200) {
+                                    if (response.body()!!.succes !== 1) {
+                                        Toast.makeText(
+                                            this@MessaageChat,
+                                            "Something Went wrong",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+
+                        })
+                }
+
+            }
+
+        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK && data != null && data!!.data != null) {
+        if (resultCode == RESULT_OK && data != null && data.data != null) {
 
             Toast.makeText(this, "Here2", Toast.LENGTH_SHORT).show()
             val progressBar = ProgressDialog(this)
@@ -238,9 +316,33 @@ class MessaageChat : AppCompatActivity() {
                     messageHashMap["messageId"] = messageId
 
                     ref.child("Chats").child(messageId!!).setValue(messageHashMap)
+                        .addOnCompleteListener {
+                            if (it.isSuccessful) {
 
+                                progressBar.dismiss()
+                                val reference = FirebaseDatabase.getInstance().reference
+                                    .child("Users").child(firebaseUser!!.uid)
+
+                                reference.addValueEventListener(object : ValueEventListener {
+                                    override fun onCancelled(error: DatabaseError) {
+                                        TODO("Not yet implemented")
+                                    }
+
+                                    override fun onDataChange(p0: DataSnapshot) {
+                                        val user = p0.getValue(Users::class.java)
+                                        if (notify) {
+                                            sendNotification(
+                                                userIDVisit,
+                                                user!!.getUserName(),
+                                                "Sent You an Image"
+                                            )
+                                        }
+                                        notify = false
+                                    }
+                                })
+                            }
+                        }
                 }
-                progressBar.dismiss()
             }
 
         }
@@ -262,11 +364,11 @@ class MessaageChat : AppCompatActivity() {
 
 //                    Log.d(TAG, "iseen: $chat")
 //                    Log.d(TAG, "iseen ${chat.getReciever()} ${firebaseUser!!.uid}")
-                    if (chat!!.getReciever().equals(firebaseUser!!.uid) && chat!!.getSender()
+                    if (chat.getReciever().equals(firebaseUser!!.uid) && chat.getSender()
                             .equals(userId)
                     ) {
-                        val hashMap=HashMap<String,Any>()
-                        hashMap["isseen"]=true
+                        val hashMap = HashMap<String, Any>()
+                        hashMap["isseen"] = true
                         datasnapshot.ref.updateChildren(hashMap)
 
 
