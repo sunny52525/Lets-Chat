@@ -15,6 +15,8 @@ import com.shaun.letschat.R
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.user_search_item_layout.view.*
+
+
 class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
     var userName:TextView=itemView.username_search
     var profileImageView:CircleImageView=itemView.profile_image_search
@@ -44,27 +46,35 @@ class UserAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val user:Users=musers[position]
-        holder.userName.text=user!!.getUserName()
-        Picasso.get().load(user.getProfile()).placeholder(R.drawable.profile).into(holder.profileImageView)
-        holder.itemView.setOnClickListener {
-            val options= arrayOf<CharSequence>(
+        holder.userName.text = user.getUserName()
+        Picasso.get().load(user.getProfile()).placeholder(R.drawable.profile)
+            .into(holder.profileImageView)
+        holder.itemView.setOnLongClickListener {
+            val options = arrayOf<CharSequence>(
                 "Send Message",
                 "Visit Profile"
             )
-            val builder:AlertDialog.Builder=AlertDialog.Builder(mcontext)
+            val builder: AlertDialog.Builder = AlertDialog.Builder(mcontext)
             builder.setTitle("What u want")
-            builder.setItems(options,DialogInterface.OnClickListener{dialog, which ->
-                if(which==0){
-                   val intent=Intent(mcontext,MessaageChat::class.java)
-                    intent.putExtra("visit_id",user.getUID())
+            builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
+                if (which == 0) {
+                    val intent = Intent(mcontext, MessaageChat::class.java)
+                    intent.putExtra("visit_id", user.getUID())
                     mcontext.startActivity(intent)
 
-                }else{
+                } else {
 
                 }
             })
             builder.show()
+            true
+        }
+        holder.itemView.setOnClickListener {
+            val intent = Intent(mcontext, MessaageChat::class.java)
+            intent.putExtra("visit_id", user.getUID())
+            mcontext.startActivity(intent)
         }
     }
+
 
 }

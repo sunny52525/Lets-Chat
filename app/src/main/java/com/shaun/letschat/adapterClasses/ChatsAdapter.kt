@@ -3,6 +3,7 @@ package com.shaun.letschat.adapterClasses
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -35,7 +36,7 @@ class ChatsAdapter(
     private val context = mContext
     private val mChatList = mChatList
     private var imageUrl = imageUrl
-
+    private var holderDelete: ChatsAdapter.ViewHolder? = null
     var firebaseUser: FirebaseUser? = FirebaseAuth.getInstance().currentUser!!
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -94,7 +95,7 @@ class ChatsAdapter(
                 holder.show_text_message!!.visibility = View.GONE
                 holder.right_image_view!!.visibility = View.VISIBLE
                 Picasso.get().load(chat.geturl()).into(holder.right_image_view)
-                holder.right_image_view!!.setOnClickListener {
+                holder.right_image_view!!.setOnLongClickListener {
                     val options = arrayOf<CharSequence>(
                         "View Image"
                         , "Delete Image"
@@ -106,19 +107,36 @@ class ChatsAdapter(
                     builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
                         if (which == 0) {
                             val intent = Intent(context, View_Full_Image::class.java)
-                            intent.putExtra("url", chat.geturl())
-                            context.startActivity(intent)
+                            val bundle = Bundle()
+//                            Log.d(TAG, "onmsga $chat")
+                            bundle.putString("url", chat.geturl())
+                            bundle.putString("msg", chat.getmessageId())
+                            bundle.putInt("position", position)
+                            intent.putExtras(bundle)
+                            context.startActivity(intent, bundle)
                         } else if (which == 1) {
                             deleteSentMessage(position, holder)
                         }
                     })
                     builder.show()
+                    true
+                }
+                holder.right_image_view!!.setOnClickListener {
+                    holderDelete = holder
+                    val intent = Intent(context, View_Full_Image::class.java)
+                    val bundle = Bundle()
+                    bundle.putString("url", chat.geturl())
+                    bundle.putInt("position", position)
+
+                    bundle.putString("msg", chat.getmessageId())
+                    intent.putExtras(bundle)
+                    context.startActivity(intent, bundle)
                 }
             } else if (!chat.getSender().equals((firebaseUser!!.uid))) {
                 holder.show_text_message!!.visibility = View.GONE
                 holder.left_image_view!!.visibility = View.VISIBLE
                 Picasso.get().load(chat.geturl()).into(holder.left_image_view)
-                holder.left_image_view!!.setOnClickListener {
+                holder.left_image_view!!.setOnLongClickListener {
                     val options = arrayOf<CharSequence>(
                         "View Image"
                         , "Cancel"
@@ -129,12 +147,33 @@ class ChatsAdapter(
                     builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
                         if (which == 0) {
                             val intent = Intent(context, View_Full_Image::class.java)
-                            intent.putExtra("url", chat.geturl())
-                            context.startActivity(intent)
+                            val bundle = Bundle()
+
+                            bundle.putString("url", chat.geturl())
+
+                            bundle.putString("msg", chat.getmessageId())
+                            bundle.putInt("position", position)
+                            intent.putExtras(bundle)
+                            context.startActivity(intent, bundle)
                         }
                     })
                     builder.show()
+                    true
                 }
+                holder.left_image_view!!.setOnClickListener {
+                    holderDelete = holder
+                    val intent = Intent(context, View_Full_Image::class.java)
+                    val bundle = Bundle()
+
+                    bundle.putString("url", chat.geturl())
+
+                    bundle.putString("msg", chat.getmessageId())
+                    bundle.putInt("position", position)
+                    intent.putExtras(bundle)
+                    context.startActivity(intent, bundle)
+                }
+
+
             }
         } else {
             holder.show_text_message!!.text = chat.getMessage()
@@ -203,4 +242,6 @@ class ChatsAdapter(
             }
 
     }
+
+
 }
