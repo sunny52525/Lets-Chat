@@ -1,8 +1,8 @@
 package com.shaun.letschat.adapterClasses
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
@@ -36,12 +36,11 @@ class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
 class UserAdapter(
     context: Context, mUsers: List<Users>,
-    isChatCheck: Boolean
+    private var isChatCheck: Boolean
 ) : RecyclerView.Adapter<ViewHolder?>() {
 
     var musers = mUsers
     var mcontext = context
-    var isChatCheck = isChatCheck
     var lastMessage = ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -93,7 +92,7 @@ class UserAdapter(
             )
             val builder: AlertDialog.Builder = AlertDialog.Builder(mcontext)
             builder.setTitle("What u want")
-            builder.setItems(options, DialogInterface.OnClickListener { dialog, which ->
+            builder.setItems(options) { dialog, which ->
                 if (which == 0) {
                     val intent = Intent(mcontext, MessaageChat::class.java)
                     intent.putExtra("visit_id", user.getUID())
@@ -105,7 +104,7 @@ class UserAdapter(
                     mcontext.startActivity(intent)
 
                 }
-            })
+            }
             builder.show()
             true
         }
@@ -125,12 +124,13 @@ class UserAdapter(
                 TODO("Not yet implemented")
             }
 
+            @SuppressLint("SetTextI18n")
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (datasnap in snapshot.children) {
                     val chat: Chat? = datasnap.getValue(Chat::class.java)
                     chat!!.setReciever(datasnap.child("receiver").value.toString())
                     Log.d(TAG, "last: $chat")
-                    if (firebaseUser != null && chat != null) {
+                    if (firebaseUser != null) {
                         if (chat.getReciever() == firebaseUser.uid && chat.getSender() == uid || chat.getReciever() == uid
                             && chat.getSender() == firebaseUser.uid
                         ) {
@@ -139,7 +139,7 @@ class UserAdapter(
                     }
                 }
                 if (lastMessage == "default") {
-                    lastMsg?.text = "you suck"
+                    lastMsg?.text = ""
                 } else if (lastMessage == "send you an image") {
                     lastMsg?.text = "Image"
                 } else {
