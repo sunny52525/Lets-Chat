@@ -2,6 +2,7 @@ package com.shaun.letschat
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 //        view_pager.adapter=viewPagerAdapter
 //        tab_layout.setupWithViewPager(view_pager)
         val ref = FirebaseDatabase.getInstance().reference.child("Chats")
-        ref!!.addValueEventListener(object : ValueEventListener {
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
@@ -57,9 +58,10 @@ class MainActivity : AppCompatActivity() {
                     val chat = dataSnapshot.getValue(Chat::class.java)
 
                     chat!!.setIseen(dataSnapshot.child("isseen").value.toString().toBoolean())
-                    chat!!.setReciever(dataSnapshot.child("receiver").value.toString())
+                    chat.setReciever(dataSnapshot.child("receiver").value.toString())
                     Log.d(TAG, "mainaa: $chat")
-                    if (chat!!.getReciever().equals(firebaseUser!!.uid) && !chat.IsSeen()) {
+                    if (chat.getReciever().equals(firebaseUser!!.uid) && !chat.IsSeen()) {
+
                         countUnreadMsg++
                     }
 
@@ -147,5 +149,26 @@ class MainActivity : AppCompatActivity() {
         override fun getPageTitle(position: Int): CharSequence? {
             return titles[position]
         }
+    }
+
+    private fun updateStatus(status: String) {
+        val ref = FirebaseDatabase.getInstance().reference.child("Users").child(firebaseUser!!.uid)
+
+        val hashMap = HashMap<String, Any>()
+        hashMap["status"] = status
+        ref.updateChildren(hashMap)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateStatus("online")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Handler().postDelayed({
+            updateStatus("offline")
+        }, 500L)
+
     }
 }

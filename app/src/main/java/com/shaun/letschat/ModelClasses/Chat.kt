@@ -38,6 +38,8 @@ class Chat{
             sender is $sender
             seen is $isseen
             messid is $messageId
+            message is ${message}
+            
         """.trimIndent()
     }
 
@@ -54,7 +56,7 @@ class Chat{
 
     }
     fun setMessage(message: String){
-        this.message=message!!
+        this.message = message
 
     }
     fun getReciever():String{
@@ -62,7 +64,7 @@ class Chat{
 
     }
     fun setReciever(receiver: String){
-        this.receiver=receiver!!
+        this.receiver = receiver
 
     }
     fun IsSeen():Boolean{
@@ -78,7 +80,7 @@ class Chat{
 
     }
     fun seturl(url: String){
-        this.url=url!!
+        this.url = url
 
     }
     fun getmessageId():String{
