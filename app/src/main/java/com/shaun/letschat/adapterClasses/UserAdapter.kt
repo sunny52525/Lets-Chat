@@ -20,6 +20,7 @@ import com.shaun.letschat.ModelClasses.Chat
 import com.shaun.letschat.ModelClasses.Users
 import com.shaun.letschat.R
 import com.shaun.letschat.TAG
+import com.shaun.letschat.user_profile
 import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.user_search_item_layout.view.*
@@ -98,7 +99,10 @@ class UserAdapter(
                     intent.putExtra("visit_id", user.getUID())
                     mcontext.startActivity(intent)
 
-                } else {
+                } else if (which == 1) {
+                    val intent = Intent(mcontext, user_profile::class.java)
+                    intent.putExtra("visit_id", user.getUID())
+                    mcontext.startActivity(intent)
 
                 }
             })
