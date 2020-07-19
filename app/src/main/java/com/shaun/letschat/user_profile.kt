@@ -28,7 +28,6 @@ class user_profile : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
-
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     user = snapshot.getValue(Users::class.java)

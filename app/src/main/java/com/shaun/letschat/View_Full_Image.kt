@@ -30,7 +30,6 @@ class View_Full_Image : AppCompatActivity() {
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
-
     private var msgId = ""
     private var url = ""
     override fun onCreate(savedInstanceState: Bundle?) {
